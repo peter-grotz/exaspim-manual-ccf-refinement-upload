@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -ex
+
+# Record the resolved environment, per AIND software practices.
+pip list > /results/pip_list.txt
+
+# Code Ocean's App Builder passes its parameters as ordered values:
+#   ./run <input_dir> <dataset> <annotator> <slicer_version> <start_date> <end_date> <replace>
+# A direct invocation passes flags instead. Blank slots are dropped.
+if [ "${1#-}" = "${1:-}" ]; then
+  args=()
+  [ -n "${1:-}" ] && args+=(--input-dir "${1}")
+  [ -n "${2:-}" ] && args+=(--dataset "${2}")
+  [ -n "${3:-}" ] && args+=(--annotator "${3}")
+  [ -n "${4:-}" ] && args+=(--slicer-version "${4}")
+  [ -n "${5:-}" ] && args+=(--start-date "${5}")
+  [ -n "${6:-}" ] && args+=(--end-date "${6}")
+  case "${7:-}" in [Tt]rue|[Yy]es|1) args+=(--replace) ;; esac
+  set -- ${args[@]+"${args[@]}"}
+fi
+
+python -u main.py "$@"

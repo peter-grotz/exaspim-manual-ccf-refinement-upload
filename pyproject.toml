@@ -1,0 +1,7 @@
+# Tooling only: the capsule's environment is environment/Dockerfile (Python 3.10).
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

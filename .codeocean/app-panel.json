@@ -1,0 +1,54 @@
+{
+	"version": 1,
+	"parameters": [
+		{
+			"id": "inputdir00000001",
+			"name": "input_dir",
+			"description": "Folder holding the .nrrd field and the Slicer .h5 transforms, e.g. /data/841260_manual_refinement",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "dataset000000001",
+			"name": "dataset",
+			"description": "Processed dataset name or s3:// URI the refinement belongs to",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "annotator0000001",
+			"name": "annotator",
+			"description": "Full name of whoever placed the landmarks",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "slicerversion001",
+			"name": "slicer_version",
+			"description": "3D Slicer version used (Help > About)",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "startdate0000001",
+			"name": "start_date",
+			"description": "Annotation start, YYYY-MM-DD",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "enddate000000001",
+			"name": "end_date",
+			"description": "Annotation finish, YYYY-MM-DD (optional)",
+			"type": "text",
+			"value_type": "string"
+		},
+		{
+			"id": "replace000000001",
+			"name": "replace",
+			"description": "true to replace a refinement already published for this dataset (optional)",
+			"type": "text",
+			"value_type": "string"
+		}
+	]
+}
