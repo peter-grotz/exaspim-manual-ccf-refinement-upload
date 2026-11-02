@@ -19,7 +19,8 @@ The field is made outside this capsule; nothing here computes or changes it.
 | 7 | `replace` | `true` to replace a refinement already published for the dataset | no |
 | 8 | `dry_run` | `true` to validate and write `processing.json` to `/results` without uploading | no |
 
-`dry_run`, `DRY_RUN=1` or `--dry-run` validates and writes `processing.json` to `/results` without
+`dry_run`, `DRY_RUN=1` or `--dry-run` runs every check and writes the exact tree that
+would be uploaded to `/results/manual_ccf_refinement/` (the field included), without
 touching S3. AWS credentials need read and write on the dataset.
 
 ## Checks — any failure stops the run before anything is written

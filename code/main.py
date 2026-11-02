@@ -3,9 +3,10 @@
 1. Validate the field and its transforms (:mod:`validate`).
 2. Check the dataset: it has a CCF registration, and its subject is the field's.
 3. Write ``processing.json`` (:mod:`metadata`) to ``/results``.
-4. Unless ``--dry-run``: upload the field, the transforms and ``processing.json`` to
+4. Upload the field, the transforms and ``processing.json`` to
    ``<dataset>/manual_ccf_refinement/``, refusing to overwrite an existing refinement
-   unless ``--replace``.
+   unless ``--replace``. With ``--dry-run`` the same tree is written to
+   ``/results/manual_ccf_refinement/`` instead.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -124,8 +126,14 @@ def run(args: argparse.Namespace, fs) -> int:
     uploads |= {str(t): f"{target}/{TRANSFORMS_DIR}/{t.name}" for t in refinement.transforms}
     uploads[str(staged)] = f"{target}/processing.json"
     if args.dry_run:
+        # Mirror the upload into /results/manual_ccf_refinement/, so the published tree
+        # can be inspected; nothing is written to S3.
         for local, remote in uploads.items():
-            logger.info("Dry run: would upload %s -> s3://%s", local, remote)
+            mirrored = args.results_dir / OUTPUT_DIR / Path(remote).relative_to(target)
+            if mirrored != staged:
+                mirrored.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(local, mirrored)
+            logger.info("Dry run: %s -> s3://%s (copied to %s)", local, remote, mirrored)
         return 0
 
     # Upload first, then remove what the new refinement did not overwrite, so a failed

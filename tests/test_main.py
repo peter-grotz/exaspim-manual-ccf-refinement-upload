@@ -38,7 +38,14 @@ def test_a_dry_run_writes_only_to_results(s3, tmp_path):
     before = sorted(s3.find(root))
     assert main.run(_args(tmp_path, "--dry-run"), s3) == 0
     assert sorted(s3.find(root)) == before
-    assert (tmp_path / "results/manual_ccf_refinement/processing.json").is_file()
+    mirror = tmp_path / "results/manual_ccf_refinement"
+    assert sorted(p.relative_to(mirror).as_posix() for p in mirror.rglob("*") if p.is_file()) == [
+        "841260_manual_displacement_field.nrrd",
+        "processing.json",
+        "transforms/Transform10h.h5",
+        "transforms/Transform1h.h5",
+        "transforms/Transform2h.h5",
+    ]
 
 
 @pytest.mark.parametrize("dataset", [DATASET, f"s3://{BUCKET}/{DATASET}/ccf_alignment/"])
