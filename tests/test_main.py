@@ -121,4 +121,7 @@ def test_the_run_script_maps_app_panel_slots(tmp_path):
     assert call("/data/in", "ds", "J", "5", "2026-08-03", "2026-08-07", "true").endswith(
         "--end-date|2026-08-07|--replace|"
     )
+    assert call("/data/in", "ds", "J", "5", "2026-08-03", "", "false", "true").endswith(
+        "--start-date|2026-08-03|--dry-run|"
+    )
     assert call("--input-dir", "/x") == "--input-dir|/x|"

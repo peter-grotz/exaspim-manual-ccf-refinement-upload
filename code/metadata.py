@@ -26,7 +26,7 @@ def parse_when(value: str) -> datetime:
     Parameters
     ----------
     value : str
-        ``YYYY-MM-DD`` or an ISO 8601 date-time.
+        ``YYYY-MM-DD``, ``YYYY/MM/DD`` or an ISO 8601 date-time.
 
     Returns
     -------
@@ -38,10 +38,11 @@ def parse_when(value: str) -> datetime:
     ValueError
         If the value is neither.
     """
+    value = value.strip().replace("/", "-")
     try:
-        parsed = datetime.fromisoformat(value.strip())
+        parsed = datetime.fromisoformat(value)
     except ValueError:
-        parsed = datetime.combine(date.fromisoformat(value.strip()), time())
+        parsed = datetime.combine(date.fromisoformat(value), time())
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 

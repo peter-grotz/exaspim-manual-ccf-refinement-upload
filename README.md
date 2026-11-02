@@ -14,11 +14,12 @@ The field is made outside this capsule; nothing here computes or changes it.
 | 2 | `dataset` | `exaSPIM_841260_2026-07-07_15-13-51_processed_2026-07-26_09-25-11` or its `s3://` URI | yes |
 | 3 | `annotator` | `Jane Doe` | yes |
 | 4 | `slicer_version` | `5.6.2` (Slicer: Help → About) | yes |
-| 5 | `start_date` | `2026-08-03` (no timezone means UTC) | yes |
+| 5 | `start_date` | `2026-08-03` or `2026/08/03` (no timezone means UTC) | yes |
 | 6 | `end_date` | `2026-08-07` | no |
 | 7 | `replace` | `true` to replace a refinement already published for the dataset | no |
+| 8 | `dry_run` | `true` to validate and write `processing.json` to `/results` without uploading | no |
 
-`DRY_RUN=1` (or `--dry-run`) validates and writes `processing.json` to `/results` without
+`dry_run`, `DRY_RUN=1` or `--dry-run` validates and writes `processing.json` to `/results` without
 touching S3. AWS credentials need read and write on the dataset.
 
 ## Checks — any failure stops the run before anything is written

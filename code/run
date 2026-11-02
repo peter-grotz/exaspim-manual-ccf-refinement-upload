@@ -5,7 +5,7 @@ set -ex
 pip list > /results/pip_list.txt
 
 # Code Ocean's App Builder passes its parameters as ordered values:
-#   ./run <input_dir> <dataset> <annotator> <slicer_version> <start_date> <end_date> <replace>
+#   ./run <input_dir> <dataset> <annotator> <slicer_version> <start_date> <end_date> <replace> <dry_run>
 # A direct invocation passes flags instead. Blank slots are dropped.
 if [ "${1#-}" = "${1:-}" ]; then
   args=()
@@ -16,6 +16,7 @@ if [ "${1#-}" = "${1:-}" ]; then
   [ -n "${5:-}" ] && args+=(--start-date "${5}")
   [ -n "${6:-}" ] && args+=(--end-date "${6}")
   case "${7:-}" in [Tt]rue|[Yy]es|1) args+=(--replace) ;; esac
+  case "${8:-}" in [Tt]rue|[Yy]es|1) args+=(--dry-run) ;; esac
   set -- ${args[@]+"${args[@]}"}
 fi
 

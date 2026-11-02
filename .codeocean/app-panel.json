@@ -49,6 +49,13 @@
 			"description": "true to replace a refinement already published for this dataset (optional)",
 			"type": "text",
 			"value_type": "string"
+		},
+		{
+			"id": "dryrun0000000001",
+			"name": "dry_run",
+			"description": "true to validate and write processing.json to /results without uploading (optional)",
+			"type": "text",
+			"value_type": "string"
 		}
 	]
 }

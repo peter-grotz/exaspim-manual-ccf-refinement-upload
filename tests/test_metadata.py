@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 
 from aind_data_schema.core.processing import Processing
+
 from metadata import build_processing, parse_when, to_json
 
 
@@ -33,5 +34,6 @@ def test_an_end_date_is_recorded_when_given():
 
 def test_dates_without_a_timezone_are_utc():
     assert parse_when("2026-08-03") == datetime(2026, 8, 3, tzinfo=timezone.utc)
+    assert parse_when("2026/01/09") == datetime(2026, 1, 9, tzinfo=timezone.utc)
     assert parse_when("2026-08-03T09:30:00") == datetime(2026, 8, 3, 9, 30, tzinfo=timezone.utc)
     assert parse_when("2026-08-03T09:30:00-07:00").utcoffset().total_seconds() == -7 * 3600
