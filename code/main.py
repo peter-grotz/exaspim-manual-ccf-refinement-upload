@@ -20,8 +20,9 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
-from metadata import OUTPUT_DIR, build_processing, parse_when, to_json
 from validate import ValidationError, validate
+
+from metadata import OUTPUT_DIR, build_processing, parse_when, to_json
 
 logger = logging.getLogger("upload")
 
