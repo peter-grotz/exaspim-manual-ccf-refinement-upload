@@ -70,16 +70,18 @@ def find_inputs(folder: Path) -> tuple[Path, list[Path]]:
     Raises
     ------
     ValidationError
-        If there is not exactly one ``.nrrd``, or no ``.h5``, or a transform name has no
-        number or repeats one.
+        If there is not exactly one forward ``.nrrd``, or no ``.h5``, or a transform name
+        has no number or repeats one.
     """
     if not folder.is_dir():
         raise ValidationError(f"Input folder {folder} does not exist")
-    fields = sorted(folder.rglob("*.nrrd"))
+    # The field generator writes an inverse field beside the forward one; only the
+    # forward field is published.
+    fields = sorted(p for p in folder.rglob("*.nrrd") if "inverse" not in p.name.lower())
     if len(fields) != 1:
         raise ValidationError(
-            f"Expected exactly one .nrrd in {folder}, found {len(fields)}: "
-            f"{[f.name for f in fields]}. Only the forward field is published."
+            f"Expected exactly one forward .nrrd in {folder}, found {len(fields)}: "
+            f"{[f.name for f in fields]}"
         )
     transforms = sorted(folder.rglob("*.h5"))
     if not transforms:

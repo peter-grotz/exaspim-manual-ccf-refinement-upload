@@ -23,9 +23,9 @@ touching S3. AWS credentials need read and write on the dataset.
 
 ## Checks — any failure stops the run before anything is written
 
-- **Exactly one `.nrrd`**, named `<subject>_manual_displacement_field.nrrd`: the SWC
-  transform applies whatever single `.nrrd` it finds, and refuses two. Inverse fields are
-  not published.
+- **Exactly one forward `.nrrd`**, named `<subject>_manual_displacement_field.nrrd`: the
+  SWC transform applies whatever single `.nrrd` it finds, and refuses two. Inverse fields
+  in the folder (the field generator writes one) are ignored and not published.
 - **The field's header**: a 3-vector field on the CCF 10 µm grid (1320 × 800 × 1140,
   10 µm), in LPS millimetres, as Slicer exports it. Only the header is read.
 - **The transforms**: at least one; each `Transform<N>h.h5` (Slicer) or `transform_<N>.h5`,

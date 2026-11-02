@@ -22,17 +22,27 @@ def test_generator_transform_names_are_accepted(tmp_path):
     assert [t.name for t in find_inputs(tmp_path)[1]] == ["transform_1.h5"]
 
 
+def test_an_inverse_field_beside_the_forward_one_is_ignored(tmp_path):
+    write_field(tmp_path / "841260_manual_displacement_field.nrrd")
+    write_field(tmp_path / "841260_manual_inverse_displacement_field.nrrd")
+    write_transform(tmp_path / "841260_transforms" / "transform_1.h5")
+    field, transforms = find_inputs(tmp_path)
+    assert field.name == "841260_manual_displacement_field.nrrd"
+    assert [t.name for t in transforms] == ["transform_1.h5"]
+
+
 @pytest.mark.parametrize(
     "names, message",
     [
         (
             [
                 "841260_manual_displacement_field.nrrd",
-                "841260_manual_inverse_displacement_field.nrrd",
+                "841260_displacement_field.nrrd",
             ],
-            "exactly one .nrrd",
+            "exactly one forward .nrrd",
         ),
-        ([], "exactly one .nrrd"),
+        (["841260_manual_inverse_displacement_field.nrrd"], "exactly one forward .nrrd"),
+        ([], "exactly one forward .nrrd"),
     ],
 )
 def test_anything_but_one_field_is_refused(tmp_path, names, message):
