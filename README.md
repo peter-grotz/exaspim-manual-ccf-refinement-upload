@@ -50,8 +50,17 @@ processing.json
 `processing.json` describes one process, *Manual CCF refinement*: process type
 `Image atlas alignment`, 3D Slicer and its version, the annotator, the dates,
 `output_path: manual_ccf_refinement`, and a one-line note. It names no pipeline: the step is
-done by hand, not by `exaspim-data-processing`. The link to the registration it refines is
-added when it is merged into the dataset's root `processing.json`.
+done by hand, not by `exaspim-data-processing`.
+
+## The dataset's root `processing.json`
+
+If the dataset has one, the same process is added to it, with the edge
+`Manual CCF refinement ← Image atlas alignment - 10 um`. Nothing else in the file changes.
+It is written last, after the refinement's files are confirmed on S3, and a dry run writes
+it to `/results/processing.json` instead. With `replace`, an existing refinement entry is
+swapped, not duplicated. A root record that cannot be read or would not validate stops the
+run before anything is written. A dataset without a root record keeps the refinement's
+record only in its folder.
 
 ## Tests
 

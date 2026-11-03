@@ -1,0 +1,826 @@
+{
+   "object_type": "Processing",
+   "describedBy": "https://raw.githubusercontent.com/AllenNeuralDynamics/aind-data-schema/main/src/aind_data_schema/core/processing.py",
+   "schema_version": "2.2.8",
+   "data_processes": [
+      {
+         "object_type": "Data process",
+         "process_type": "Denoising",
+         "name": "Inference dispatch",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/9976378",
+            "name": null,
+            "version": "ee72ac0c5d7a921e27933a4fd141aa7ae53d05aa",
+            "commit_hash": null,
+            "container": null,
+            "run_script": null,
+            "language": null,
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "input_uri": "s3://aind-open-data/853533_2026-09-18_16-42-16/SPIM",
+               "output_base": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr",
+               "spec_dir": "/results",
+               "chunks": null,
+               "aws_region": "us-west-2",
+               "anon_s3": false,
+               "res": "0",
+               "channel": "561",
+               "config": "/data/inference_config.json",
+               "workflow_type": "denoise-net",
+               "checkpoint_asset_id": "feb19f26-ccd1-4c3c-8a33-16cf3bc064b6",
+               "checkpoint_path": "/data/runtime-weights/BM4DNet-20260716-48--162.310937.pth",
+               "wait": true,
+               "poll_interval": 5.0,
+               "max_retries": 1000
+            },
+            "core_dependency": null
+         },
+         "experimenters": [],
+         "pipeline_name": null,
+         "start_date_time": "2026-10-06T21:07:59.057215Z",
+         "end_date_time": "2026-10-08T01:55:26.474275Z",
+         "output_path": null,
+         "output_parameters": null,
+         "notes": null,
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Other",
+         "name": "In-place multiscale generation",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/8739853/tree",
+            "name": null,
+            "version": null,
+            "commit_hash": null,
+            "container": null,
+            "run_script": "code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "dispatch_metadata_path": "/data/tile_000000.json",
+               "tile_count": 2,
+               "requested_n_levels": 7,
+               "io_backend": "tensorstore",
+               "output_shards": "inherit",
+               "io_concurrency": {},
+               "reducer": "rank",
+               "reducer_rank": -2
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Cameron Arshadi"
+         ],
+         "pipeline_name": null,
+         "start_date_time": "2026-10-08T01:58:27.926706Z",
+         "end_date_time": "2026-10-08T03:39:49.100075Z",
+         "output_path": "multiscale_data_process_tile_000000_ch_488.ome.zarr.json",
+         "output_parameters": {
+            "dispatch_metadata_path": "/data/tile_000000.json",
+            "tile_paths": [
+               "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_488.ome.zarr",
+               "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_561.ome.zarr"
+            ],
+            "requested_n_levels": 7,
+            "io_backend": "tensorstore",
+            "output_shards": "inherit",
+            "io_concurrency": {},
+            "reducer": "rank",
+            "tile_results": [
+               {
+                  "tile_path": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_488.ome.zarr",
+                  "status": "success",
+                  "started_at": "2026-10-08T01:58:27.926731",
+                  "ended_at": "2026-10-08T01:58:51.852815",
+                  "levels_written": [
+                     "0",
+                     "1",
+                     "2",
+                     "3",
+                     "4",
+                     "5",
+                     "6"
+                  ],
+                  "error": null
+               },
+               {
+                  "tile_path": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_561.ome.zarr",
+                  "status": "success",
+                  "started_at": "2026-10-08T01:58:51.853070",
+                  "ended_at": "2026-10-08T03:39:49.099745",
+                  "levels_written": [
+                     "0",
+                     "1",
+                     "2",
+                     "3",
+                     "4",
+                     "5",
+                     "6"
+                  ],
+                  "error": null
+               }
+            ],
+            "reducer_rank": -2
+         },
+         "notes": "Generates OME-Zarr multiscale levels in place for each input tile.",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Other",
+         "name": "Whole brain masking",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/exaspim-sam",
+            "name": "exaspim-sam",
+            "version": "e814d5b8e97c81f1269e0abc360b77127994e825",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "input_path": "/data/config.json",
+               "res_488": 1,
+               "res_561": 4,
+               "inference_channel": "561",
+               "raw_save_dir": "/results/raw",
+               "mask_save_dir": "/results/mask",
+               "pred_save_dir": "/results/pred",
+               "postprocessed_save_dir": "/results/postprocessed",
+               "preprocess": {
+                  "channels": [
+                     "488",
+                     "561"
+                  ],
+                  "gaussian_sigma": 2,
+                  "threshold_method": "fixed",
+                  "fixed_threshold": 1.0,
+                  "percentile": 1.0
+               },
+               "inference": {
+                  "medsam_checkpoint": "/data/medsam_best.pth",
+                  "medsam_model_type": "vit_b",
+                  "device": "cuda:0",
+                  "batch_size": 4,
+                  "use_amp": true,
+                  "use_torch_compile": true,
+                  "bbox_prompt_type": "whole"
+               },
+               "postprocess": {
+                  "input_path": "/results/pred",
+                  "output_dir": "/results/postprocessed",
+                  "raw_base_dir": "/results/raw",
+                  "kernel_size": 3
+               },
+               "tile_json_path": "/data/config.json",
+               "selected_tile_count": 2
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Cameron Arshadi"
+         ],
+         "pipeline_name": null,
+         "start_date_time": "2026-10-08T16:45:03Z",
+         "end_date_time": "2026-10-08T16:49:35Z",
+         "output_path": "/results/postprocessed",
+         "output_parameters": null,
+         "notes": "Whole brain masking pipeline using preprocessing, MedSAM inference, and mask postprocessing. Run status: success; exit code: 0.",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image flat-field correction",
+         "name": "Image flat-field correction",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/exaspim-flatfield-correction",
+            "name": null,
+            "version": "0.2.3",
+            "commit_hash": null,
+            "container": null,
+            "run_script": null,
+            "language": null,
+            "language_version": null,
+            "input_data": [
+               {
+                  "object_type": "Data asset",
+                  "url": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr"
+               }
+            ],
+            "parameters": {
+               "tile_paths": [
+                  "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_561.ome.zarr",
+                  "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/denoised/SPIM.ome.zarr/tile_000000_ch_488.ome.zarr"
+               ],
+               "output": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/flatfield_correction/SPIM.ome.zarr",
+               "save_outputs": true,
+               "results_dir": "/results",
+               "res": "0",
+               "method": "fitting",
+               "overwrite": true,
+               "skip_flat_field": false,
+               "skip_bkg_sub": false,
+               "flatfield_path": null,
+               "mask_dir": "/data/masks",
+               "fitting_config": "/data/fitting_config.json",
+               "num_workers": 16,
+               "worker_mode": "processes",
+               "log_level": 20,
+               "n_levels": 7,
+               "io_backend": "tensorstore",
+               "io_concurrency": {
+                  "zarr_async_concurrency": 8,
+                  "zarr_threading_max_workers": 8,
+                  "tensorstore_data_copy_concurrency": 8,
+                  "tensorstore_file_io_concurrency": 8,
+                  "tensorstore_s3_request_concurrency": 8,
+                  "tensorstore_http_request_concurrency": 8
+               },
+               "max_chunks_per_block": 32768,
+               "output_zarr_format": "2",
+               "mask_shard_size": [
+                  512,
+                  512,
+                  512
+               ],
+               "probability_shard_size": [
+                  256,
+                  256,
+                  256
+               ],
+               "corrected_shard_size": [
+                  512,
+                  512,
+                  512
+               ],
+               "corrected_rank": -2,
+               "use_reference_bkg": false,
+               "background_smoothing_sigma": 3.0,
+               "background_final_smoothing_sigma": 0.0,
+               "binned_channel": "488",
+               "is_binned": false,
+               "median_summary_path": "/data/masks/tile_000009_median_intensity_summary.json",
+               "output_path": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/flatfield_correction/SPIM.ome.zarr"
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "unknown"
+         ],
+         "pipeline_name": null,
+         "start_date_time": "2026-10-08T16:59:31.949379Z",
+         "end_date_time": "2026-10-08T19:31:14.306216Z",
+         "output_path": null,
+         "output_parameters": null,
+         "notes": null,
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image tile fusing",
+         "name": "Image tile fusing",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/Rhapso",
+            "name": "rhapso-affine-fusion",
+            "version": "67833e51f74c9ff88406c204c43e2bc2b34acb64",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "s3_xml_path": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/tile_alignment/rhapso_2026-10-09_17-13-33/rhapso-solver-split-affine.xml",
+               "zarr_location": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/fusion/fused.zarr",
+               "block_size_xyz": [
+                  512,
+                  512,
+                  384
+               ],
+               "output_block_size": [
+                  256,
+                  256,
+                  128
+               ],
+               "intensity_range": [
+                  0,
+                  65535
+               ],
+               "overlap_strategy": "lowest_view_wins",
+               "output_zarr_version": 2,
+               "multiscale_chunk_size": [
+                  128,
+                  256,
+                  256
+               ],
+               "n_lvls": 8,
+               "scale_factor_zyx": [
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ],
+                  [
+                     2,
+                     2,
+                     2
+                  ]
+               ],
+               "base_level": 0,
+               "compressor_cname": "zstd",
+               "compressor_clevel": 7,
+               "compressor_shuffle": "shuffle"
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Sean Fite"
+         ],
+         "pipeline_name": null,
+         "start_date_time": "2026-10-11T04:54:29.775450Z",
+         "end_date_time": "2026-10-11T04:54:29.775450Z",
+         "output_path": null,
+         "output_parameters": null,
+         "notes": null,
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image cell classification",
+         "name": "Proposal classification",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/aind-exaspim-soma-detection.git",
+            "name": "aind-exaspim-soma-detection",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "multiscale": 2,
+               "patch_shape": [
+                  84,
+                  84,
+                  84
+               ],
+               "accept_threshold": 0.5,
+               "model_path": "../data/CNN3D-20260503-150-0.9876.pth",
+               "output_dir": "../results/soma_detection/",
+               "save_swcs": true
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Anna Grim"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-23T23:16:25.481146Z",
+         "end_date_time": "2026-10-24T03:20:55.760343Z",
+         "output_path": "soma_detection",
+         "output_parameters": null,
+         "notes": "Classify soma proposals with a 3d CNN",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image cell classification",
+         "name": "Proposal generation",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/aind-exaspim-soma-detection.git",
+            "name": "aind-exaspim-soma-detection",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "multiscale": 4,
+               "patch_shape": [
+                  64,
+                  64,
+                  64
+               ],
+               "min_brightness": 20,
+               "patch_overlap": [
+                  28,
+                  28,
+                  28
+               ],
+               "output_dir": "../results/soma_detection/",
+               "save_swcs": false
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Anna Grim"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-23T23:16:25.481146Z",
+         "end_date_time": "2026-10-24T03:20:55.760343Z",
+         "output_path": "soma_detection",
+         "output_parameters": null,
+         "notes": "Gaussian-based soma proposal generation and filtering by shape and fit",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image cell quantification",
+         "name": "Soma metrics",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://github.com/AllenNeuralDynamics/aind-exaspim-soma-detection.git",
+            "name": "aind-exaspim-soma-detection",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "multiscale": 2,
+               "patch_shape": [
+                  36,
+                  36,
+                  36
+               ],
+               "output_dir": "../results/soma_detection/",
+               "save_swcs": true
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Anna Grim"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-23T23:16:25.481146Z",
+         "end_date_time": "2026-10-24T03:20:55.760343Z",
+         "output_path": "soma_detection",
+         "output_parameters": null,
+         "notes": "Estimates soma radii by fitting an ellipsoid and computes soma brightness",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image tile fusing",
+         "name": "CCF channel fusion",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/1941809/tree",
+            "name": "aind-exaspim-ccf-fusion",
+            "version": "0.0.0",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Java",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "input_xml": "tile_alignment/rhapso_2026-10-09_17-13-33/rhapso-solver-split-affine-ccf.xml",
+               "channel": "ch_488",
+               "main_class": "net.preibisch.bigstitcher.spark.SparkAffineFusion",
+               "block_scale": "4,4,4",
+               "data_type": "UINT16",
+               "storage_format": "ZARR"
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Peter Grotz"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-23T23:19:50Z",
+         "end_date_time": "2026-10-24T01:04:12.446287Z",
+         "output_path": "fusion/fused_ccf_ch.zarr",
+         "output_parameters": null,
+         "notes": "Fuses the CCF-alignment channel. The flat-field brain mask is fused separately by the aind-exaspim-mask-fusion capsule.",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image atlas alignment",
+         "name": "Image atlas alignment - 25 um",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/6898460/tree",
+            "name": "aind-exaspim-ccf-registration",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "input_uri": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/fusion/fused_ccf_ch.zarr/",
+               "level": 3,
+               "resolution_um": 25,
+               "dataset_id": "853533",
+               "use_fused_mask": true,
+               "mask_applied": true,
+               "sample_to_template_registration": {
+                  "sample_scale": [
+                     0.027,
+                     0.02025,
+                     0.02025
+                  ],
+                  "exaspim_template_path": "../data/exaSPIM_template_25um/exaspim_template_7sujects_nomask_25um_round6.nii.gz",
+                  "ccf_path": "../data/allen_mouse_ccf/average_template/average_template_25.nii.gz",
+                  "affine_reg_iterations": [
+                     200,
+                     100,
+                     25,
+                     3
+                  ],
+                  "syn_reg_iterations": [
+                     200,
+                     100,
+                     25,
+                     3
+                  ],
+                  "log_level": "ERROR"
+               },
+               "template_to_ccf_transforms": [
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/1Warp.nii.gz",
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/0GenericAffine.mat"
+               ]
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Peter Grotz"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-24T01:05:02.595399Z",
+         "end_date_time": "2026-10-24T01:21:19.065998Z",
+         "output_path": "ccf_alignment",
+         "output_parameters": null,
+         "notes": "Import + template-based registration (25 um): sample -> template -> CCF",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image atlas alignment",
+         "name": "Image atlas alignment - 10 um",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/6898460/tree",
+            "name": "aind-exaspim-ccf-registration",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "input_uri": "s3://aind-open-data/853533_2026-09-18_16-42-16_processed_2026-10-06_17-07-13/fusion/fused_ccf_ch.zarr/",
+               "level": 2,
+               "resolution_um": 10,
+               "dataset_id": "853533_10um",
+               "sample_to_template_registration": {
+                  "sample_scale": [
+                     0.0135,
+                     0.010125,
+                     0.010125
+                  ],
+                  "exaspim_template_path": "../data/exaspim_template_7subjects_nomask_10um_round6_template_only/fixed_median.nii.gz",
+                  "ccf_path": "../data/allen_mouse_ccf/average_template/average_template_10.nii.gz",
+                  "affine_reg_iterations": [
+                     300,
+                     200,
+                     50,
+                     0
+                  ],
+                  "syn_reg_iterations": [
+                     400,
+                     200,
+                     40,
+                     0
+                  ],
+                  "log_level": "ERROR"
+               },
+               "sample_to_template_transforms": [
+                  "/tmp/nxf.oM4gFhkdsN/capsule/results/ccf_alignment/853533_to_exaSPIM_SyN_1Warp.nii.gz",
+                  "/tmp/nxf.oM4gFhkdsN/capsule/results/ccf_alignment/853533_to_exaSPIM_SyN_0GenericAffine.mat"
+               ],
+               "template_to_ccf_transforms": [
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/1Warp.nii.gz",
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/0GenericAffine.mat"
+               ]
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Peter Grotz"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-24T01:21:43.895909Z",
+         "end_date_time": "2026-10-24T01:51:48.889279Z",
+         "output_path": "ccf_alignment",
+         "output_parameters": null,
+         "notes": "Import + 10um sample->CCF registration using transforms: ['/tmp/nxf.oM4gFhkdsN/capsule/results/ccf_alignment/853533_to_exaSPIM_SyN_1Warp.nii.gz', '/tmp/nxf.oM4gFhkdsN/capsule/results/ccf_alignment/853533_to_exaSPIM_SyN_0GenericAffine.mat'] and ['/data/reg_exaspim_template_to_ccf_25um_v1.5/1Warp.nii.gz', '/data/reg_exaspim_template_to_ccf_25um_v1.5/0GenericAffine.mat']",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image atlas alignment",
+         "name": "CCF annotation to sample space",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/6898460/tree",
+            "name": "aind-exaspim-ccf-registration",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run_register_ccf_annotation_10um.sh",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "subject_id": "853533",
+               "ccf_annotation_path": "../data/allen_mouse_ccf/annotation/ccf_2017/annotation_10.nii.gz",
+               "ccf_template_path": "../data/allen_mouse_ccf/average_template/average_template_10.nii.gz",
+               "exaspim_template_path": "../data/exaspim_template_7subjects_nomask_10um_round6_template_only/fixed_median.nii.gz",
+               "level": 2
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Peter Grotz"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-24T02:28:21.351270Z",
+         "end_date_time": "2026-10-24T02:49:56.132542Z",
+         "output_path": "ccf_alignment/ccf_anno_to_sample",
+         "output_parameters": {
+            "standard_outputs": {
+               "annotation_image": "ccf_alignment/ccf_anno_to_sample/ccf_anno_in_sample_space.nii.gz",
+               "annotation_zarr": "ccf_alignment/ccf_anno_to_sample/ccf_anno_in_sample_space.zarr"
+            }
+         },
+         "notes": "Transforms CCF annotation into sample space and writes zarr/precomputed label volumes.",
+         "resources": null
+      },
+      {
+         "object_type": "Data process",
+         "process_type": "Image atlas alignment",
+         "name": "CCF meshes to sample space",
+         "stage": "Processing",
+         "code": {
+            "object_type": "Code",
+            "url": "https://codeocean.allenneuraldynamics.org/capsule/6898460/tree",
+            "name": "aind-exaspim-ccf-registration",
+            "version": "0.0.1",
+            "commit_hash": null,
+            "container": null,
+            "run_script": "/code/run_invert_ccf_objs.sh",
+            "language": "Python",
+            "language_version": null,
+            "input_data": null,
+            "parameters": {
+               "n_meshes": 840,
+               "mesh_units_um": 1.0,
+               "ccf_to_template_fwd": [
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/1Warp.nii.gz",
+                  "/data/reg_exaspim_template_to_ccf_25um_v1.5/0GenericAffine.mat"
+               ],
+               "template_to_sample_fwd": [
+                  "/results/ccf_alignment/853533_to_exaSPIM_SyN_1Warp.nii.gz",
+                  "/results/ccf_alignment/853533_to_exaSPIM_SyN_0GenericAffine.mat"
+               ],
+               "direction": "reg-FWD(C->T) then SyN-FWD(T->S), two-stage points",
+               "inv_swaps": [
+                  [
+                     1,
+                     0
+                  ],
+                  [
+                     2,
+                     1
+                  ],
+                  [
+                     0,
+                     2
+                  ]
+               ],
+               "inv_flips": [
+                  0,
+                  2
+               ]
+            },
+            "core_dependency": null
+         },
+         "experimenters": [
+            "Peter Grotz"
+         ],
+         "pipeline_name": "exaspim-data-processing",
+         "start_date_time": "2026-10-24T04:00:30.690190Z",
+         "end_date_time": "2026-10-24T04:02:47.903533Z",
+         "output_path": "ccf_alignment/ccf_mesh_to_sample",
+         "output_parameters": null,
+         "notes": "Reverse-transforms CCF region surface meshes into sample space (point transform of vertices through the CCF->template->sample chain).",
+         "resources": null
+      }
+   ],
+   "pipelines": [
+      {
+         "object_type": "Code",
+         "url": "https://codeocean.allenneuraldynamics.org/capsule/9578158/tree",
+         "name": "exaspim-data-processing",
+         "version": "0.0.0",
+         "commit_hash": null,
+         "container": null,
+         "run_script": null,
+         "language": null,
+         "language_version": null,
+         "input_data": null,
+         "parameters": null,
+         "core_dependency": null
+      }
+   ],
+   "notes": "Processes were reordered by start_date_time",
+   "dependency_graph": {
+      "Image tile fusing": [],
+      "Whole brain masking": [],
+      "Image flat-field correction": [
+         "Inference dispatch"
+      ],
+      "Inference dispatch": [],
+      "In-place multiscale generation": [],
+      "CCF annotation to sample space": [
+         "Image atlas alignment - 25 um"
+      ],
+      "CCF meshes to sample space": [
+         "Image atlas alignment - 25 um"
+      ],
+      "Image atlas alignment - 10 um": [
+         "Image atlas alignment - 25 um"
+      ],
+      "Image atlas alignment - 25 um": [
+         "CCF channel fusion"
+      ],
+      "Proposal classification": [
+         "Proposal generation"
+      ],
+      "Proposal generation": [
+         "Image tile fusing"
+      ],
+      "Soma metrics": [
+         "Proposal classification"
+      ],
+      "CCF channel fusion": []
+   }
+}

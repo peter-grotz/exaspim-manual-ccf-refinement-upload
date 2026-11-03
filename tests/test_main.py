@@ -140,7 +140,7 @@ def test_replace_touches_only_the_refinement_folder(s3, tmp_path):
     keep = [
         f"{root}/manual_ccf_refinement_old/field.nrrd",
         f"{root}/ccf_alignment/841260_to_exaSPIM_SyN_0GenericAffine.mat",
-        f"{root}/processing.json",
+        f"{root}/acquisition.json",
     ]
     for path in keep:
         s3.pipe(path, b"keep")
@@ -148,3 +148,48 @@ def test_replace_touches_only_the_refinement_folder(s3, tmp_path):
     assert main.run(_args(tmp_path, "--replace"), s3) == 0
     assert not s3.exists(f"{TARGET}/old_field.nrrd")
     assert [s3.cat(path) for path in keep] == [b"keep"] * len(keep)
+
+
+ROOT_RECORD = json.loads(
+    (Path(__file__).parent / "resources" / "root_processing_853533.json").read_text()
+)
+
+
+def test_the_root_record_gains_the_refinement_after_the_files(s3, tmp_path):
+    root = make_dataset(s3, root_record=ROOT_RECORD)
+    make_refinement(tmp_path / "in", transforms=(1,))
+    assert main.run(_args(tmp_path), s3) == 0
+    published = json.loads(s3.cat(f"{root}/processing.json"))
+    assert published["data_processes"][:-1] == ROOT_RECORD["data_processes"]
+    assert published["data_processes"][-1]["output_path"] == "manual_ccf_refinement"
+    assert published["dependency_graph"]["Manual CCF refinement"] == [
+        "Image atlas alignment - 10 um"
+    ]
+
+
+def test_a_dry_run_shows_the_root_record_without_writing_it(s3, tmp_path):
+    root = make_dataset(s3, root_record=ROOT_RECORD)
+    make_refinement(tmp_path / "in", transforms=(1,))
+    assert main.run(_args(tmp_path, "--dry-run"), s3) == 0
+    assert json.loads(s3.cat(f"{root}/processing.json")) == ROOT_RECORD
+    staged = json.loads((tmp_path / "results" / "processing.json").read_text())
+    assert staged["data_processes"][-1]["name"] == "Manual CCF refinement"
+
+
+def test_without_a_root_record_none_is_written(s3, tmp_path):
+    root = make_dataset(s3)
+    make_refinement(tmp_path / "in", transforms=(1,))
+    assert main.run(_args(tmp_path), s3) == 0
+    assert not s3.exists(f"{root}/processing.json")
+    assert not (tmp_path / "results" / "processing.json").exists()
+
+
+def test_an_unreadable_root_record_publishes_nothing(s3, tmp_path):
+    root = make_dataset(s3)
+    s3.pipe(f"{root}/processing.json", b"not json")
+    make_refinement(tmp_path / "in", transforms=(1,))
+    before = sorted(s3.find(root))
+    with pytest.raises(ValidationError, match="not readable JSON"):
+        main.run(_args(tmp_path), s3)
+    assert sorted(s3.find(root)) == before
+    assert s3.cat(f"{root}/processing.json") == b"not json"

@@ -2,11 +2,12 @@
 
 1. Validate the field and its transforms (:mod:`validate`).
 2. Check the dataset: it has a CCF registration, and its subject is the field's.
-3. Write ``processing.json`` (:mod:`metadata`) to ``/results``.
+3. Write ``processing.json`` (:mod:`metadata`) to ``/results``, and the dataset's root
+   ``processing.json`` with the refinement added, if the dataset has one.
 4. Upload the field, the transforms and ``processing.json`` to
    ``<dataset>/manual_ccf_refinement/``, refusing to overwrite an existing refinement
-   unless ``--replace``. With ``--dry-run`` the same tree is written to
-   ``/results/manual_ccf_refinement/`` instead.
+   unless ``--replace``, then the updated root ``processing.json``. With ``--dry-run``
+   the same files are written to ``/results`` instead.
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from urllib.parse import urlparse
 
 from validate import ValidationError, validate
 
-from metadata import OUTPUT_DIR, build_processing, parse_when, to_json
+from metadata import OUTPUT_DIR, RootRecordError, add_to_root, build_processing, parse_when, to_json
 
 logger = logging.getLogger("upload")
 
@@ -123,6 +124,25 @@ def run(args: argparse.Namespace, fs) -> int:
     staged.write_text(to_json(processing), encoding="utf-8")
     logger.info("Wrote %s", staged)
 
+    # The dataset's root record gains the refinement; a dataset without one keeps the
+    # refinement's record only in its folder.
+    root_key = f"{root}/processing.json"
+    staged_root = None
+    if fs.exists(root_key):
+        try:
+            current = json.loads(fs.cat(root_key))
+        except ValueError as error:
+            raise ValidationError(f"s3://{root_key} is not readable JSON: {error}") from error
+        try:
+            updated = add_to_root(current, processing, args.replace)
+        except RootRecordError as error:
+            raise ValidationError(f"s3://{root_key}: {error}") from error
+        staged_root = args.results_dir / "processing.json"
+        staged_root.write_text(json.dumps(updated, indent=2), encoding="utf-8")
+        logger.info("Wrote %s (root record with the refinement added)", staged_root)
+    else:
+        logger.warning("No s3://%s; the refinement is recorded only in its folder", root_key)
+
     uploads = {str(refinement.field): f"{target}/{refinement.field.name}"}
     uploads |= {str(t): f"{target}/{TRANSFORMS_DIR}/{t.name}" for t in refinement.transforms}
     uploads[str(staged)] = f"{target}/processing.json"
@@ -135,6 +155,8 @@ def run(args: argparse.Namespace, fs) -> int:
                 mirrored.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(local, mirrored)
             logger.info("Dry run: %s -> s3://%s (copied to %s)", local, remote, mirrored)
+        if staged_root:
+            logger.info("Dry run: %s -> s3://%s", staged_root, root_key)
         return 0
 
     # Upload first, then remove what the new refinement did not overwrite, so a failed
@@ -148,6 +170,10 @@ def run(args: argparse.Namespace, fs) -> int:
         logger.warning("Removing %d file(s) of the replaced refinement: %s", len(stale), stale)
         fs.rm(stale)
     logger.info("Published %d files to s3://%s/", len(uploads), target)
+    if staged_root:
+        # Last, so the root record never names a refinement that is not there.
+        fs.put(str(staged_root), root_key)
+        logger.info("Updated s3://%s", root_key)
     return 0
 
 

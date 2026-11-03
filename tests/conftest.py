@@ -69,10 +69,12 @@ def make_refinement(folder: Path, subject="841260", transforms=(2, 10, 1)) -> Pa
     return folder
 
 
-def make_dataset(fs, subject="841260", registered=True, name=DATASET) -> str:
+def make_dataset(fs, subject="841260", registered=True, name=DATASET, root_record=None) -> str:
     """A processed dataset with its subject and, optionally, its CCF registration."""
     root = f"{BUCKET}/{name}"
     fs.pipe(f"{root}/subject.json", json.dumps({"subject_id": subject}).encode())
     if registered:
         fs.pipe(f"{root}/ccf_alignment/processing.json", b"{}")
+    if root_record is not None:
+        fs.pipe(f"{root}/processing.json", json.dumps(root_record).encode())
     return root
