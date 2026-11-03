@@ -132,3 +132,19 @@ def test_the_run_script_maps_app_panel_slots(tmp_path):
         "--start-date|2026-08-03|--dry-run|"
     )
     assert call("--input-dir", "/x") == "--input-dir|/x|"
+
+
+def test_replace_touches_only_the_refinement_folder(s3, tmp_path):
+    root = make_dataset(s3)
+    s3.pipe(f"{TARGET}/old_field.nrrd", b"old")
+    keep = [
+        f"{root}/manual_ccf_refinement_old/field.nrrd",
+        f"{root}/ccf_alignment/841260_to_exaSPIM_SyN_0GenericAffine.mat",
+        f"{root}/processing.json",
+    ]
+    for path in keep:
+        s3.pipe(path, b"keep")
+    make_refinement(tmp_path / "in", transforms=(1,))
+    assert main.run(_args(tmp_path, "--replace"), s3) == 0
+    assert not s3.exists(f"{TARGET}/old_field.nrrd")
+    assert [s3.cat(path) for path in keep] == [b"keep"] * len(keep)
