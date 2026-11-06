@@ -184,6 +184,17 @@ def test_without_a_root_record_none_is_written(s3, tmp_path):
     assert not (tmp_path / "results" / "processing.json").exists()
 
 
+def test_a_pre_2_root_record_is_left_unchanged(s3, tmp_path):
+    root = make_dataset(s3)
+    old = {"schema_version": "1.1.4", "processing_pipeline": {"data_processes": []}}
+    s3.pipe(f"{root}/processing.json", json.dumps(old).encode())
+    make_refinement(tmp_path / "in", transforms=(1,))
+    assert main.run(_args(tmp_path), s3) == 0
+    assert json.loads(s3.cat(f"{root}/processing.json")) == old
+    assert s3.exists(f"{TARGET}/processing.json")
+    assert not (tmp_path / "results" / "processing.json").exists()
+
+
 def test_an_unreadable_root_record_publishes_nothing(s3, tmp_path):
     root = make_dataset(s3)
     s3.pipe(f"{root}/processing.json", b"not json")

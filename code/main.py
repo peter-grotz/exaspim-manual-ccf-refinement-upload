@@ -124,15 +124,25 @@ def run(args: argparse.Namespace, fs) -> int:
     staged.write_text(to_json(processing), encoding="utf-8")
     logger.info("Wrote %s", staged)
 
-    # The dataset's root record gains the refinement; a dataset without one keeps the
-    # refinement's record only in its folder.
+    # The dataset's root record gains the refinement; a dataset without one, or with one in
+    # the pre-2.0 schema, keeps the refinement's record only in its folder.
     root_key = f"{root}/processing.json"
     staged_root = None
+    current = None
     if fs.exists(root_key):
         try:
             current = json.loads(fs.cat(root_key))
         except ValueError as error:
             raise ValidationError(f"s3://{root_key} is not readable JSON: {error}") from error
+        if "data_processes" not in current:
+            logger.warning(
+                "s3://%s is in the pre-2.0 schema (%s); left unchanged, the refinement is "
+                "recorded only in its folder",
+                root_key,
+                current.get("schema_version"),
+            )
+            current = None
+    if current is not None:
         try:
             updated = add_to_root(current, processing, args.replace)
         except RootRecordError as error:
@@ -140,7 +150,7 @@ def run(args: argparse.Namespace, fs) -> int:
         staged_root = args.results_dir / "processing.json"
         staged_root.write_text(json.dumps(updated, indent=2), encoding="utf-8")
         logger.info("Wrote %s (root record with the refinement added)", staged_root)
-    else:
+    elif not fs.exists(root_key):
         logger.warning("No s3://%s; the refinement is recorded only in its folder", root_key)
 
     uploads = {str(refinement.field): f"{target}/{refinement.field.name}"}
